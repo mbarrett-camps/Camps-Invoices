@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Lycée Summer Camp — Staff Invoice</title>
+<style>
+  :root{
+    --bg:#FBFAF6;
+    --paper:#FFFFFF;
+    --ink:#22281F;
+    --muted:#6B7263;
+    --hairline:#E1DED2;
+    --accent:#3D5A3D;
+    --accent-pale:#EAF0E7;
+    --warn:#9A6A3C;
+    --field:#F6F5F0;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:Georgia,'Times New Roman',serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .toolbar{
+    max-width:800px;
+    margin:18px auto 0;
+    padding:0 8px;
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;
+  }
+  .toolbar button{
+    font-family:Helvetica,Arial,sans-serif;
+    font-size:12px;
+    letter-spacing:.03em;
+    text-transform:uppercase;
+    border:1px solid var(--accent);
+    color:var(--accent);
+    background:transparent;
+    padding:8px 14px;
+    border-radius:3px;
+    cursor:pointer;
+  }
+  .toolbar button:hover{ background:var(--accent-pale); }
+  .toolbar button.primary{ background:var(--accent); color:#fff; }
+  .toolbar button.primary:hover{ opacity:.9; background:var(--accent); }
+
+  .doc{
+    max-width:800px;
+    margin:14px auto 60px;
+    background:var(--paper);
+    padding:50px 56px 56px;
+    box-shadow:0 1px 3px rgba(0,0,0,.06), 0 12px 28px rgba(0,0,0,.05);
+  }
+
+  /* ---- header ---- */
+  .head{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    padding-bottom:18px;
+    border-bottom:2px solid var(--ink);
+  }
+  .org-name{
+    font-size:23px;
+    letter-spacing:.06em;
+    margin:0;
+    font-weight:normal;
+  }
+  .org-sub{
+    font-family:Helvetica,Arial,sans-serif;
+    font-size:11.5px;
+    color:var(--muted);
+    margin:4px 0 0;
+    letter-spacing:.02em;
+  }
+  .meta{
+    display:grid;
+    grid-template-columns:auto auto;
+    gap:6px 16px;
+    text-align:right;
+  }
+  .meta label{
+    font-family:Helvetica,Arial,sans-serif;
+    font-size:10.5px;
+    color:var(--muted);
+    text-transform:uppercase;
+    letter-spacing:.05em;
+    align-self:center;
+  }
+  .meta input{
+    text-align:right;
+    min-width:130px;
+  }
+  .field-label{
+    font-family:Helvetica,Arial,sans-serif;
+    font-size:10.5px;
+    color:var(--muted);
+    text-transform:uppercase;
+    letter-spacing:.04em;
+    margin-bottom:8px;
+  }
+  .chk-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px 18px;
+  }
+  .chk-option{
+    font-family:Helvetica,Arial,sans-serif;
+    font-size:12.5px;
+    color:var(--ink);
+    display:flex;
+    align-items:center;
+    gap:5px;
+    cursor:pointer;
+  }
+  .chk-option input[type=checkbox]{
+    width:14px;
+    height:14px;
+    accent-color:var(--accent);
+    cursor:pointer;
+  }
+
+  /* ---- generic field styling ---- */
+  input[type=text], input[type=number], input[type=time], textarea{
+    font-family:Helvetica,Arial,sans-serif;
+    font-size:13px;
+    color:var(--ink);
+    background:var(--field);
+    border:1px solid var(--hairline);
+    border-radius:2px;
+    padding:6px 8px;
+    width:100%;
+  }
+  input:focus, textarea:focus{
+    outline:none;
+    border-color:var(--accent);
+    background:#fff;
+  }
+  textarea{ resize:vertical; min-height:42px; font-family:Helvetica,Arial,sans-serif;}
+
+  .section{ margin-top:34px; }
+  .section h2{
+    font-family:Helvetica,Arial,sans-serif;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    color:var(--muted);
+    margin:0 0 12px;
+    padding-bottom:6px;
+    border-bottom:1px solid var(--hairline);
+  }
+  .note{
+    font-family:Helvetica,Arial,sans-serif;
+    font-size:11.5px;
+    color:var(--muted);
+    margin:-4px 0 12px;
+    line-height:1.5;
+  }
+
+  .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+  .field{ margin-bottom:12px; }
+  .field label{
+    display:block;
+    font-family:Helvetica,Arial,sans-serif;
+    font-size:10.5px;
+    color:var(--muted);
+    text-transform:uppercase;
+    letter-spacing:.04em;
+    margin-bottom:4px;
+  }
+
+  /* ---- hours table ---- */
+  table{ width:100%; border-collapse:collapse; }
+  .hours-table th{
+    font-family:Helvetica,Arial,sans-serif;
+    font-size:9.5px;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+    color:var(--muted);
+    text-align:left;
+    padding:0 6px 8px;
+    border-bottom:1px solid var(--ink);
+  }
+  .hours-table td{
+    padding:5px 6px;
+    border-bottom:1px solid var(--hairline);
+    vertical-align:middle;
+  }
+  .hours-table td.day{
+    font-family:Helvetica,Arial,sans-serif;
+    font-size:12.5px;
+    font-weight:bold;
+    white-space:nowrap;
+  }
+  .computed{
+    font-family:Helvetica,Arial,sans-serif;
+    font-size:13px;
+    background:var(--accent-pale);
+    border:1px solid var(--hairline);
+    border-radius:2px;
+    padding:6px 8px;
+    text-align:right;
+    color:var(--accent);
+    font-weight:bold;
+  }
+  .hours-table input[type=number]{ text-align:right; }
+  .totals-row td{
+    border-bottom:none;
+    border-top:2px solid var(--ink);
+    padding-top:10px;
+    font-family:Helvetica,Arial,sans-serif;
+  }
+  .totals-row + .totals-row td{
+    border-top:none;
+    padding-top:4px;
+  }
+  .totals-row .tot-label{
+    text-align:right;
+    color:var(--muted);
+    font-size:10.5px;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+    padding-right:8px;
+  }
+  .totals-row .tot-val{
+    font-size:15px;
+    font-weight:bold;
+    color:var(--accent);
+    text-align:right;
+  }
+
+  /* ---- services table ---- */
+  .svc-table th{
+    font-family:Helvetica,Arial,sans-serif;
+    font-size:9.5px;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+    color:var(--muted);
+    text-align:left;
+    padding:0 6px 8px;
+    border-bottom:1px solid var(--ink);
+  }
+  .svc-table td{
+    padding:6px;
+    border-bottom:1px solid var(--hairline);
+  }
+  .svc-table input[type=number]{ text-align:right; }
+  .svc-table .svc-cost.fixed{
+    background:var(--accent-pale);
+    color:var(--accent);
+    font-weight:bold;
+    cursor:not-allowed;
+  }
+  .svc-table .desc-col{ width:46%; }
+  .svc-table .num-col{ width:14%; }
+  .svc-table .sub-col{ width:16%; }
+  .svc-table .rm-col{ width:24px; }
+  .rm-btn{
+    background:none;border:none;color:var(--muted);
+    cursor:pointer;font-size:14px;line-height:1;
+    font-family:Helvetica,Arial,sans-serif;
+  }
+  .rm-btn:hover{ color:#a33; }
+
+  /* ---- hours row actions ---- */
+  .hours-table select.day-select{
+    font-family:Helvetica,Arial,sans-serif;
+    font-size:12.5px;
+    font-weight:bold;
+    color:var(--ink);
+    background:var(--field);
+    border:1px solid var(--hairline);
+    border-radius:2px;
+    padding:5px 6px;
+    width:100%;
+    cursor:pointer;
+  }
+  .hours-table select.day-select:focus{
+    outline:none;
+    border-color:var(--accent);
+    background:#fff;
+  }
+  .row-actions{
+    white-space:nowrap;
+    text-align:right;
+  }
+  .row-actions button{
+    background:none;
+    border:none;
+    color:var(--muted);
+    cursor:pointer;
+    font-size:14px;
+    line-height:1;
+    font-family:Helvetica,Arial,sans-serif;
+    padding:2px 4px;
+  }
+  .row-actions .dup-btn:hover{ color:var(--accent); }
+  .row-actions .del-btn:hover{ color:#a33; }
+  .row-actions-col{ width:44px; }
+  @media print{
+    .row-actions{ display:none; }
+  }
+  .add-row-btn{
+    margin-top:10px;
+    font-family:Helvetica,Arial,sans-serif;
+    font-size:11.5px;
+    color:var(--accent);
+    background:none;
+    border:1px dashed var(--accent);
+    border-radius:3px;
+    padding:6px 12px;
+    cursor:pointer;
+  }
+  .add-row-btn:hover{ background:var(--accent-pale); }
+
+  .verify-block{
+    margin-top:28px;
+    padding-top:18px;
+    border-top:1px solid var(--hairline);
+  }
+  .verify-check{
+    display:flex;
+    align-items:flex-start;
+    gap:8px;
+    font-family:Helvetica,Arial,sans-serif;
+    font-size:13px;
+    color:var(--ink);
+    cursor:pointer;
+    transition:color .15s;
+  }
+  .verify-check input[type=checkbox]{
+    width:16px;
+    height:16px;
+    margin-top:1px;
+    accent-color:var(--accent);
+    cursor:pointer;
+    flex-shrink:0;
+  }
+  .verify-warn{
+    display:none;
+    font-family:Helvetica,Arial,sans-serif;
+    font-size:11.5px;
+    color:#B3261E;
+    margin:6px 0 0 24px;
+  }
+  .verify-block.unverified .verify-check{
+    color:#B3261E;
+  }
+  .verify-block.unverified .verify-check input[type=checkbox]{
+    outline:2px solid #B3261E;
+    outline-offset:2px;
+  }
+  .verify-block.unverified .verify-warn{
+    display:block;
+  }
+
+  .grand-total-row td{
+    border-bottom:none;
+    border-top:2px solid var(--ink);
+    padding-top:10px;
+  }
+  .grand-total-row .gt-label{
+    text-align:right;
+    font-family:Helvetica,Arial,sans-serif;
+    font-size:12px;
+    color:var(--muted);
+    text-transform:uppercase;
+    letter-spacing:.04em;
+  }
+  .grand-total-row .gt-val{
+    font-size:18px;
+    font-weight:bold;
+    text-align:right;
+  }
+
+  .footer-note{
+    margin-top:40px;
+    padding-top:14px;
+    border-top:1px solid var(--hairline);
+    font-family:Helvetica,Arial,sans-serif;
+    font-size:10.5px;
+    color:var(--muted);
+    line-height:1.6;
+  }
+
+  @media print{
+    body{ background:#fff; }
+    .toolbar{ display:none; }
+    .doc{ box-shadow:none; margin:0; padding:0 0 20px; max-width:none; }
+    input, textarea{ background:#fff !important; border-color:#ccc; }
+    .computed{ background:#fff !important; }
+  }
+
+  @media (max-width:640px){
+    .doc{ padding:28px 20px; }
+    .head{ flex-direction:column; gap:14px; }
+    .meta{ text-align:left; grid-template-columns:auto 1fr; }
+    .meta input{ text-align:left; min-width:0; }
+    .grid2{ grid-template-columns:1fr; gap:0; }
+    .hours-table{ font-size:11px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <button id="printBtn" class="primary">Print / Save as PDF</button>
+</div>
+
+<div class="doc">
+
+  <div class="head">
+    <div>
+      <p class="org-name">Lycée Camp Staff Invoice</p>
+    </div>
+    <div class="meta">
+      <label>Invoice #</label><input type="text" id="invNum" placeholder="—">
+      <label>Date</label><input type="date" id="invDate">
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Session &amp; Campus</h2>
+    <div class="field-label">Session(s)</div>
+    <div class="chk-row" id="sessionRow">
+      <label class="chk-option"><input type="checkbox" value="Oct"> Oct</label>
+      <label class="chk-option"><input type="checkbox" value="Feb"> Feb</label>
+      <label class="chk-option"><input type="checkbox" value="Apr W1"> Apr W1</label>
+      <label class="chk-option"><input type="checkbox" value="Apr W2"> Apr W2</label>
+      <label class="chk-option"><input type="checkbox" value="Summer W1"> Summer W1</label>
+      <label class="chk-option"><input type="checkbox" value="Summer W2"> Summer W2</label>
+      <label class="chk-option"><input type="checkbox" value="Summer W3"> Summer W3</label>
+      <label class="chk-option"><input type="checkbox" value="Summer W4"> Summer W4</label>
+      <label class="chk-option"><input type="checkbox" value="Summer W5"> Summer W5</label>
+      <label class="chk-option"><input type="checkbox" value="Summer W6"> Summer W6</label>
+      <label class="chk-option"><input type="checkbox" value="Summer W7"> Summer W7</label>
+      <label class="chk-option"><input type="checkbox" value="Summer W8"> Summer W8</label>
+    </div>
+    <div class="field-label" style="margin-top:16px;">Campus</div>
+    <div class="chk-row" id="campusRow">
+      <label class="chk-option"><input type="checkbox" value="ASH"> ASH</label>
+      <label class="chk-option"><input type="checkbox" value="SAU"> SAU</label>
+      <label class="chk-option"><input type="checkbox" value="ORT"> ORT</label>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Staff &amp; Payment Info</h2>
+    <div class="grid2">
+      <div>
+        <div class="field"><label>Name (Staff Member)</label><input type="text" id="staffName"></div>
+        <div class="field"><label>Billing Address</label><textarea id="billingAddr" rows="2"></textarea></div>
+      </div>
+      <div>
+        <div class="field"><label>Phone</label><input type="text" id="phone"></div>
+        <div class="field"><label>Email</label><input type="text" id="email"></div>
+        <div class="field"><label>Account #</label><input type="text" id="acctNum"></div>
+        <div class="field"><label>Routing #</label><input type="text" id="routingNum"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <table class="hours-table">
+      <thead>
+        <tr>
+          <th>Day</th>
+          <th>Start</th>
+          <th>End</th>
+          <th>Unpaid Lunch Break (min)</th>
+          <th>Daycare Hrs</th>
+          <th>Regular Hrs</th>
+          <th class="row-actions-col"></th>
+        </tr>
+      </thead>
+      <tbody id="hoursBody">
+        <!-- rows injected by JS -->
+      </tbody>
+      <tfoot>
+        <tr class="totals-row">
+          <td colspan="3"></td>
+          <td class="tot-label">Totals</td>
+          <td class="tot-val" id="totDaycare">0.00</td>
+          <td class="tot-val" id="totRegular">0.00</td>
+          <td></td>
+        </tr>
+        <tr class="totals-row">
+          <td colspan="3"></td>
+          <td class="tot-label" colspan="2">Total Combined Hours</td>
+          <td class="tot-val" id="totCombined">0.00</td>
+          <td></td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <div class="section">
+    <h2>Services</h2>
+    <table class="svc-table">
+      <thead>
+        <tr>
+          <th class="desc-col">Item Description</th>
+          <th class="num-col">Cost&nbsp;$</th>
+          <th class="num-col">Hrs</th>
+          <th class="sub-col">Subtotal</th>
+          <th class="rm-col"></th>
+        </tr>
+      </thead>
+      <tbody id="svcBody"></tbody>
+      <tfoot>
+        <tr class="grand-total-row">
+          <td colspan="3" class="gt-label">Total Due</td>
+          <td class="gt-val" id="grandTotal">$0.00</td>
+          <td></td>
+        </tr>
+      </tfoot>
+    </table>
+    <button class="add-row-btn" id="addSvcRow">+ Add line item</button>
+
+    <div class="verify-block">
+      <label class="verify-check" id="verifyLabel">
+        <input type="checkbox" id="verifyCheckbox">
+        <span>I verify that the above hours are accurate and true.</span>
+      </label>
+      <p class="verify-warn" id="verifyWarn">Please check the box above to verify your hours before printing.</p>
+      <div class="field" style="max-width:320px; margin-top:10px;">
+        <label>Signature</label>
+        <input type="text" id="signature" placeholder="Type your full name">
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-note">
+    Submit completed invoice with direct deposit information above. Questions about pay periods or daycare hour calculations should be directed to the Camp Director (camps@lelycee.org).
+  </div>
+
+</div>
+
+<script>
+const DAYCARE_WINDOWS = [[8*60,9*60],[16*60+30,24*60]]; // 8-9am and 4:30pm-midnight
+
+function timeToMin(t){
+  if(!t) return null;
+  const [h,m] = t.split(":").map(Number);
+  return h*60+m;
+}
+function overlap(aStart,aEnd,bStart,bEnd){
+  const s = Math.max(aStart,bStart), e = Math.min(aEnd,bEnd);
+  return Math.max(0, e-s);
+}
+function fmtHrs(mins){
+  return (mins/60).toFixed(2);
+}
+
+const ALL_DAYS = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+const hoursBody = document.getElementById('hoursBody');
+
+function createHoursRow(day){
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td class="day">
+      <select class="day-select">
+        ${ALL_DAYS.map(d => `<option value="${d}"${d === day ? ' selected' : ''}>${d}</option>`).join('')}
+      </select>
+    </td>
+    <td><input type="time" class="start"></td>
+    <td><input type="time" class="end"></td>
+    <td><input type="number" class="brk" min="0" step="1" placeholder="0"></td>
+    <td><div class="computed daycare-val">0.00</div></td>
+    <td><div class="computed reg-val">0.00</div></td>
+    <td class="row-actions">
+      <button type="button" class="dup-btn" title="Duplicate row">&#10064;</button>
+      <button type="button" class="del-btn" title="Delete row">&times;</button>
+    </td>
+  `;
+
+  const daySel = tr.querySelector('.day-select');
+  const start  = tr.querySelector('.start');
+  const end    = tr.querySelector('.end');
+  const brk    = tr.querySelector('.brk');
+
+  ['input','change'].forEach(evt => {
+    start.addEventListener(evt, recalcHours);
+    end.addEventListener(evt, recalcHours);
+    brk.addEventListener(evt, recalcHours);
+  });
+
+  tr.querySelector('.dup-btn').addEventListener('click', () => {
+    const newRow = createHoursRow(daySel.value);
+    newRow.querySelector('.start').value = start.value;
+    newRow.querySelector('.end').value = end.value;
+    newRow.querySelector('.brk').value = brk.value;
+    tr.after(newRow);
+    recalcHours();
+  });
+
+  tr.querySelector('.del-btn').addEventListener('click', () => {
+    tr.remove();
+    recalcHours();
+  });
+
+  return tr;
+}
+
+["Monday","Tuesday","Wednesday","Thursday","Friday"].forEach(day => {
+  hoursBody.appendChild(createHoursRow(day));
+});
+
+function recalcHours(){
+  let totalDay = 0, totalReg = 0;
+  hoursBody.querySelectorAll('tr').forEach(tr => {
+    const start = timeToMin(tr.querySelector('.start').value);
+    const end   = timeToMin(tr.querySelector('.end').value);
+    const brk   = parseFloat(tr.querySelector('.brk').value) || 0;
+
+    let daycareMin = 0, workedMin = 0, regMin = 0;
+    if(start !== null && end !== null && end > start){
+      workedMin = end - start;
+      DAYCARE_WINDOWS.forEach(([ws,we]) => {
+        daycareMin += overlap(start,end,ws,we);
+      });
+      regMin = Math.max(0, workedMin - brk - daycareMin);
+    }
+    tr.querySelector('.daycare-val').textContent = fmtHrs(daycareMin);
+    tr.querySelector('.reg-val').textContent = fmtHrs(regMin);
+    totalDay += daycareMin;
+    totalReg += regMin;
+  });
+  document.getElementById('totDaycare').textContent = fmtHrs(totalDay);
+  document.getElementById('totRegular').textContent = fmtHrs(totalReg);
+  document.getElementById('totCombined').textContent = fmtHrs(totalDay + totalReg);
+}
+
+recalcHours();
+
+// ---- auto-fill Invoice # from Date (MMDDYY), stays editable ----
+const invDateEl = document.getElementById('invDate');
+const invNumEl = document.getElementById('invNum');
+invDateEl.addEventListener('change', () => {
+  if(!invDateEl.value) return;
+  const [yyyy, mm, dd] = invDateEl.value.split('-');
+  invNumEl.value = mm + dd + yyyy.slice(2);
+});
+
+// ---- services table ----
+const svcBody = document.getElementById('svcBody');
+
+function addSvcRow(defaultDesc, fixedCost){
+  const tr = document.createElement('tr');
+  const costAttrs = fixedCost !== undefined
+    ? `value="${fixedCost.toFixed(2)}" readonly`
+    : `placeholder="0.00"`;
+  tr.innerHTML = `
+    <td><input type="text" class="svc-desc" value="${defaultDesc || ''}"></td>
+    <td><input type="number" class="svc-cost${fixedCost !== undefined ? ' fixed' : ''}" min="0" step="0.01" ${costAttrs}></td>
+    <td><input type="number" class="svc-qty" min="0" step="0.25" placeholder="0"></td>
+    <td><div class="computed svc-sub">$0.00</div></td>
+    <td><button class="rm-btn" title="Remove row">&times;</button></td>
+  `;
+  svcBody.appendChild(tr);
+  tr.querySelector('.rm-btn').addEventListener('click', () => {
+    tr.remove();
+    recalcSvc();
+  });
+}
+
+function recalcSvc(){
+  let grand = 0;
+  svcBody.querySelectorAll('tr').forEach(tr => {
+    const cost = parseFloat(tr.querySelector('.svc-cost').value) || 0;
+    const qty  = parseFloat(tr.querySelector('.svc-qty').value) || 0;
+    const sub = cost*qty;
+    tr.querySelector('.svc-sub').textContent = '$' + sub.toFixed(2);
+    grand += sub;
+  });
+  document.getElementById('grandTotal').textContent = '$' + grand.toFixed(2);
+}
+
+svcBody.addEventListener('input', recalcSvc);
+document.getElementById('addSvcRow').addEventListener('click', () => addSvcRow(''));
+
+// seed with the standard line items
+addSvcRow('Camp Lead Teacher');
+addSvcRow('Camp Assistant');
+addSvcRow('High School Camp Assistant Level 1', 20.00);
+addSvcRow('High School Camp Assistant Level 2', 25.00);
+addSvcRow('Camp Daycare', 25.00);
+addSvcRow('');
+recalcSvc();
+
+// ---- verification checkbox + print ----
+const verifyBlock = document.querySelector('.verify-block');
+const verifyCheckbox = document.getElementById('verifyCheckbox');
+
+verifyCheckbox.addEventListener('change', () => {
+  if(verifyCheckbox.checked) verifyBlock.classList.remove('unverified');
+});
+
+document.getElementById('printBtn').addEventListener('click', () => {
+  if(!verifyCheckbox.checked){
+    verifyBlock.classList.add('unverified');
+    verifyBlock.scrollIntoView({behavior:'smooth', block:'center'});
+  } else {
+    verifyBlock.classList.remove('unverified');
+  }
+  window.print();
+});
+</script>
+
+</body>
+</html>
