@@ -264,6 +264,45 @@
     font-family:Helvetica,Arial,sans-serif;
   }
   .rm-btn:hover{ color:#a33; }
+
+  /* ---- hours row actions ---- */
+  .hours-table select.day-select{
+    font-family:Helvetica,Arial,sans-serif;
+    font-size:12.5px;
+    font-weight:bold;
+    color:var(--ink);
+    background:var(--field);
+    border:1px solid var(--hairline);
+    border-radius:2px;
+    padding:5px 6px;
+    width:100%;
+    cursor:pointer;
+  }
+  .hours-table select.day-select:focus{
+    outline:none;
+    border-color:var(--accent);
+    background:#fff;
+  }
+  .row-actions{
+    white-space:nowrap;
+    text-align:right;
+  }
+  .row-actions button{
+    background:none;
+    border:none;
+    color:var(--muted);
+    cursor:pointer;
+    font-size:14px;
+    line-height:1;
+    font-family:Helvetica,Arial,sans-serif;
+    padding:2px 4px;
+  }
+  .row-actions .dup-btn:hover{ color:var(--accent); }
+  .row-actions .del-btn:hover{ color:#a33; }
+  .row-actions-col{ width:44px; }
+  @media print{
+    .row-actions{ display:none; }
+  }
   .add-row-btn{
     margin-top:10px;
     font-family:Helvetica,Arial,sans-serif;
@@ -434,6 +473,7 @@
           <th>Unpaid Lunch Break (min)</th>
           <th>Daycare Hrs</th>
           <th>Regular Hrs</th>
+          <th class="row-actions-col"></th>
         </tr>
       </thead>
       <tbody id="hoursBody">
@@ -445,11 +485,13 @@
           <td class="tot-label">Totals</td>
           <td class="tot-val" id="totDaycare">0.00</td>
           <td class="tot-val" id="totRegular">0.00</td>
+          <td></td>
         </tr>
         <tr class="totals-row">
           <td colspan="3"></td>
           <td class="tot-label" colspan="2">Total Combined Hours</td>
           <td class="tot-val" id="totCombined">0.00</td>
+          <td></td>
         </tr>
       </tfoot>
     </table>
@@ -498,7 +540,6 @@
 </div>
 
 <script>
-const DAYS = ["Monday","Tuesday","Wednesday","Thursday","Friday"];
 const DAYCARE_WINDOWS = [[8*60,9*60],[16*60+30,24*60]]; // 8-9am and 4:30pm-midnight
 
 function timeToMin(t){
@@ -514,43 +555,66 @@ function fmtHrs(mins){
   return (mins/60).toFixed(2);
 }
 
+const ALL_DAYS = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
 const hoursBody = document.getElementById('hoursBody');
-const rowRefs = [];
 
-DAYS.forEach((day, i) => {
+function createHoursRow(day){
   const tr = document.createElement('tr');
   tr.innerHTML = `
-    <td class="day">${day}</td>
+    <td class="day">
+      <select class="day-select">
+        ${ALL_DAYS.map(d => `<option value="${d}"${d === day ? ' selected' : ''}>${d}</option>`).join('')}
+      </select>
+    </td>
     <td><input type="time" class="start"></td>
     <td><input type="time" class="end"></td>
     <td><input type="number" class="brk" min="0" step="1" placeholder="0"></td>
-    <td><div class="computed daycare-val" id="dc-${i}">0.00</div></td>
-    <td><div class="computed reg-val" id="rg-${i}">0.00</div></td>
+    <td><div class="computed daycare-val">0.00</div></td>
+    <td><div class="computed reg-val">0.00</div></td>
+    <td class="row-actions">
+      <button type="button" class="dup-btn" title="Duplicate row">&#10064;</button>
+      <button type="button" class="del-btn" title="Delete row">&times;</button>
+    </td>
   `;
-  hoursBody.appendChild(tr);
 
-  const refs = {
-    start: tr.querySelector('.start'),
-    end: tr.querySelector('.end'),
-    brk: tr.querySelector('.brk'),
-    dcOut: tr.querySelector(`#dc-${i}`),
-    rgOut: tr.querySelector(`#rg-${i}`)
-  };
-  rowRefs.push(refs);
+  const daySel = tr.querySelector('.day-select');
+  const start  = tr.querySelector('.start');
+  const end    = tr.querySelector('.end');
+  const brk    = tr.querySelector('.brk');
 
   ['input','change'].forEach(evt => {
-    refs.start.addEventListener(evt, recalcHours);
-    refs.end.addEventListener(evt, recalcHours);
-    refs.brk.addEventListener(evt, recalcHours);
+    start.addEventListener(evt, recalcHours);
+    end.addEventListener(evt, recalcHours);
+    brk.addEventListener(evt, recalcHours);
   });
+
+  tr.querySelector('.dup-btn').addEventListener('click', () => {
+    const newRow = createHoursRow(daySel.value);
+    newRow.querySelector('.start').value = start.value;
+    newRow.querySelector('.end').value = end.value;
+    newRow.querySelector('.brk').value = brk.value;
+    tr.after(newRow);
+    recalcHours();
+  });
+
+  tr.querySelector('.del-btn').addEventListener('click', () => {
+    tr.remove();
+    recalcHours();
+  });
+
+  return tr;
+}
+
+["Monday","Tuesday","Wednesday","Thursday","Friday"].forEach(day => {
+  hoursBody.appendChild(createHoursRow(day));
 });
 
 function recalcHours(){
   let totalDay = 0, totalReg = 0;
-  rowRefs.forEach(refs => {
-    const start = timeToMin(refs.start.value);
-    const end   = timeToMin(refs.end.value);
-    const brk   = parseFloat(refs.brk.value) || 0;
+  hoursBody.querySelectorAll('tr').forEach(tr => {
+    const start = timeToMin(tr.querySelector('.start').value);
+    const end   = timeToMin(tr.querySelector('.end').value);
+    const brk   = parseFloat(tr.querySelector('.brk').value) || 0;
 
     let daycareMin = 0, workedMin = 0, regMin = 0;
     if(start !== null && end !== null && end > start){
@@ -560,8 +624,8 @@ function recalcHours(){
       });
       regMin = Math.max(0, workedMin - brk - daycareMin);
     }
-    refs.dcOut.textContent = fmtHrs(daycareMin);
-    refs.rgOut.textContent = fmtHrs(regMin);
+    tr.querySelector('.daycare-val').textContent = fmtHrs(daycareMin);
+    tr.querySelector('.reg-val').textContent = fmtHrs(regMin);
     totalDay += daycareMin;
     totalReg += regMin;
   });
