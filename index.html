@@ -707,13 +707,6 @@ function recalcHours(){
   document.getElementById('totDaycare').textContent = fmtHrs(totalDay);
   document.getElementById('totRegular').textContent = fmtHrs(totalReg);
   document.getElementById('totCombined').textContent = fmtHrs(totalDay + totalReg);
-
-  // pre-populate the Camp Daycare service line's Hrs field from the computed Daycare total
-  const daycareQtyEl = document.getElementById('daycareQty');
-  if(daycareQtyEl){
-    daycareQtyEl.value = fmtHrs(totalDay);
-    recalcSvc();
-  }
 }
 
 // ---- auto-fill Invoice # from Date (MMDDYY), stays editable ----
@@ -775,16 +768,7 @@ addSvcRow('Camp Daycare', 25.00);
 addSvcRow('');
 recalcSvc();
 
-// the Camp Daycare row's Hrs field is driven automatically by the hours table above
-const daycareRow = svcBody.lastElementChild.previousElementSibling; // Camp Daycare is second-to-last (before the blank row)
-const daycareQtyEl = daycareRow.querySelector('.svc-qty');
-daycareQtyEl.id = 'daycareQty';
-daycareQtyEl.readOnly = true;
-daycareQtyEl.classList.add('fixed');
-daycareQtyEl.value = '0.00';
-
 // now that both tables' functions/elements exist, run the initial calculation
-// (this also populates daycareQty for the first time)
 recalcHours();
 
 // ---- verification checkbox + full-form validation + print ----
