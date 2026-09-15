@@ -81,7 +81,40 @@
     grid-template-columns:auto auto;
     gap:6px 16px;
     text-align:right;
+    background:var(--accent-pale);
+    border:1px solid var(--hairline);
+    border-radius:5px;
+    padding:12px 16px;
   }
+  .req-mark{ color:#B3261E; margin-left:2px; font-weight:bold; }
+  input.invalid, textarea.invalid, select.invalid{
+    border-color:#B3261E !important;
+    outline:2px solid #B3261E;
+    outline-offset:1px;
+    background:#FDEDEC !important;
+  }
+  .chk-row.invalid{
+    outline:2px solid #B3261E;
+    outline-offset:6px;
+    border-radius:4px;
+  }
+  .form-warn{
+    display:none;
+    font-family:Helvetica,Arial,sans-serif;
+    font-size:11px;
+    color:#B3261E;
+    margin-top:8px;
+  }
+  .form-warn.show{ display:block; }
+  .meta-warn{
+    display:none;
+    font-family:Helvetica,Arial,sans-serif;
+    font-size:11px;
+    color:#B3261E;
+    text-align:right;
+    margin-top:6px;
+  }
+  .meta-warn.show{ display:block; }
   .meta label{
     font-family:Helvetica,Arial,sans-serif;
     font-size:10.5px;
@@ -101,6 +134,11 @@
     text-transform:uppercase;
     letter-spacing:.04em;
     margin-bottom:8px;
+  }
+  .subsection-divider{
+    margin-top:20px;
+    padding-top:16px;
+    border-top:1px solid var(--hairline);
   }
   .chk-row{
     display:flex;
@@ -161,6 +199,10 @@
   }
 
   .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+  .addr-row{ display:grid; grid-template-columns:2fr 1fr 1fr; gap:16px; }
+  @media (max-width:640px){
+    .addr-row{ grid-template-columns:1fr; }
+  }
   .field{ margin-bottom:12px; }
   .field label{
     display:block;
@@ -248,7 +290,7 @@
     border-bottom:1px solid var(--hairline);
   }
   .svc-table input[type=number]{ text-align:right; }
-  .svc-table .svc-cost.fixed{
+  .svc-table .svc-cost.fixed, .svc-table .svc-qty.fixed{
     background:var(--accent-pale);
     color:var(--accent);
     font-weight:bold;
@@ -318,22 +360,25 @@
 
   .verify-block{
     margin-top:28px;
-    padding-top:18px;
-    border-top:1px solid var(--hairline);
+    padding:18px 20px;
+    background:var(--accent-pale);
+    border:1px solid var(--hairline);
+    border-radius:5px;
   }
   .verify-check{
     display:flex;
     align-items:flex-start;
-    gap:8px;
+    gap:10px;
     font-family:Helvetica,Arial,sans-serif;
-    font-size:13px;
+    font-size:14.5px;
+    font-weight:bold;
     color:var(--ink);
     cursor:pointer;
     transition:color .15s;
   }
   .verify-check input[type=checkbox]{
-    width:16px;
-    height:16px;
+    width:19px;
+    height:19px;
     margin-top:1px;
     accent-color:var(--accent);
     cursor:pointer;
@@ -344,7 +389,20 @@
     font-family:Helvetica,Arial,sans-serif;
     font-size:11.5px;
     color:#B3261E;
-    margin:6px 0 0 24px;
+    margin:6px 0 0 29px;
+  }
+  .verify-block .field label{
+    font-weight:bold;
+    color:var(--ink);
+    font-size:11px;
+  }
+  .verify-block .field input{
+    border:2px solid var(--accent);
+    font-size:14px;
+  }
+  .verify-block.unverified{
+    background:#FDEDEC;
+    border-color:#B3261E;
   }
   .verify-block.unverified .verify-check{
     color:#B3261E;
@@ -416,9 +474,12 @@
     <div>
       <p class="org-name">Lycée Camp Staff Invoice</p>
     </div>
-    <div class="meta">
-      <label>Invoice #</label><input type="text" id="invNum" placeholder="—">
-      <label>Date</label><input type="date" id="invDate">
+    <div>
+      <div class="meta">
+        <label>Invoice #<span class="req-mark">*</span></label><input type="text" id="invNum" placeholder="—">
+        <label>Date<span class="req-mark">*</span></label><input type="date" id="invDate">
+      </div>
+      <p class="meta-warn" id="metaWarn">Please enter an Invoice # and Date before printing.</p>
     </div>
   </div>
 
@@ -445,22 +506,33 @@
       <label class="chk-option"><input type="checkbox" value="SAU"> SAU</label>
       <label class="chk-option"><input type="checkbox" value="ORT"> ORT</label>
     </div>
+    <p class="form-warn" id="sessionCampusWarn">Please select at least one Session and one Campus.</p>
   </div>
 
   <div class="section">
     <h2>Staff &amp; Payment Info</h2>
     <div class="grid2">
       <div>
-        <div class="field"><label>Name (Staff Member)</label><input type="text" id="staffName"></div>
-        <div class="field"><label>Billing Address</label><textarea id="billingAddr" rows="2"></textarea></div>
+        <div class="field"><label>Name (Staff Member)<span class="req-mark">*</span></label><input type="text" id="staffName"></div>
       </div>
       <div>
-        <div class="field"><label>Phone</label><input type="text" id="phone"></div>
-        <div class="field"><label>Email</label><input type="text" id="email"></div>
-        <div class="field"><label>Account #</label><input type="text" id="acctNum"></div>
-        <div class="field"><label>Routing #</label><input type="text" id="routingNum"></div>
+        <div class="field"><label>Phone<span class="req-mark">*</span></label><input type="text" id="phone" placeholder="xxx-xxx-xxxx"></div>
+        <div class="field"><label>Email<span class="req-mark">*</span></label><input type="text" id="email"></div>
       </div>
     </div>
+    <div class="field-label" style="margin-top:4px;">Mailing Address</div>
+    <div class="field"><label>Street Address<span class="req-mark">*</span></label><input type="text" id="street"></div>
+    <div class="addr-row">
+      <div class="field"><label>City<span class="req-mark">*</span></label><input type="text" id="city"></div>
+      <div class="field"><label>State<span class="req-mark">*</span></label><input type="text" id="state" maxlength="2" style="text-transform:uppercase;"></div>
+      <div class="field"><label>Zip Code<span class="req-mark">*</span></label><input type="text" id="zip" inputmode="numeric" maxlength="5" placeholder="xxxxx"></div>
+    </div>
+    <div class="field-label subsection-divider">Direct Deposit Info</div>
+    <div class="addr-row" style="grid-template-columns:1fr 1fr;">
+      <div class="field"><label>Account #<span class="req-mark">*</span></label><input type="text" id="acctNum"></div>
+      <div class="field"><label>Routing #<span class="req-mark">*</span></label><input type="text" id="routingNum"></div>
+    </div>
+    <p class="form-warn" id="staffWarn">Please complete all Staff &amp; Payment Info fields (Zip Code must be 5 digits).</p>
   </div>
 
   <div class="section">
@@ -495,6 +567,7 @@
         </tr>
       </tfoot>
     </table>
+    <p class="form-warn" id="hoursWarn">Please enter both a Start and End time for at least one day worked (partial rows need both times filled in; unused days can stay blank).</p>
   </div>
 
   <div class="section">
@@ -519,15 +592,16 @@
       </tfoot>
     </table>
     <button class="add-row-btn" id="addSvcRow">+ Add line item</button>
+    <p class="form-warn" id="servicesWarn">Please enter at least one billable line item (Cost, Hrs, and Description all filled in for that row).</p>
 
     <div class="verify-block">
       <label class="verify-check" id="verifyLabel">
         <input type="checkbox" id="verifyCheckbox">
         <span>I verify that the above hours are accurate and true.</span>
       </label>
-      <p class="verify-warn" id="verifyWarn">Please check the box above to verify your hours before printing.</p>
+      <p class="verify-warn" id="verifyWarn">Please check the box above and sign below to verify your hours before printing.</p>
       <div class="field" style="max-width:320px; margin-top:10px;">
-        <label>Signature</label>
+        <label>Signature<span class="req-mark">*</span></label>
         <input type="text" id="signature" placeholder="Type your full name">
       </div>
     </div>
@@ -540,7 +614,8 @@
 </div>
 
 <script>
-const DAYCARE_WINDOWS = [[8*60,9*60],[16*60+30,24*60]]; // 8-9am and 4:30pm-midnight
+const ORIGINAL_TITLE = document.title;
+const DAYCARE_WINDOWS = [[16*60+30,24*60]]; // 4:30pm-midnight only (no morning daycare)
 
 function timeToMin(t){
   if(!t) return null;
@@ -632,17 +707,26 @@ function recalcHours(){
   document.getElementById('totDaycare').textContent = fmtHrs(totalDay);
   document.getElementById('totRegular').textContent = fmtHrs(totalReg);
   document.getElementById('totCombined').textContent = fmtHrs(totalDay + totalReg);
-}
 
-recalcHours();
+  // pre-populate the Camp Daycare service line's Hrs field from the computed Daycare total
+  const daycareQtyEl = document.getElementById('daycareQty');
+  if(daycareQtyEl){
+    daycareQtyEl.value = fmtHrs(totalDay);
+    recalcSvc();
+  }
+}
 
 // ---- auto-fill Invoice # from Date (MMDDYY), stays editable ----
 const invDateEl = document.getElementById('invDate');
 const invNumEl = document.getElementById('invNum');
+const metaWarn = document.getElementById('metaWarn');
 invDateEl.addEventListener('change', () => {
   if(!invDateEl.value) return;
   const [yyyy, mm, dd] = invDateEl.value.split('-');
   invNumEl.value = mm + dd + yyyy.slice(2);
+});
+[invNumEl, invDateEl].forEach(el => {
+  el.addEventListener('input', () => { if(el.value.trim()) el.classList.remove('invalid'); });
 });
 
 // ---- services table ----
@@ -691,23 +775,215 @@ addSvcRow('Camp Daycare', 25.00);
 addSvcRow('');
 recalcSvc();
 
-// ---- verification checkbox + print ----
+// the Camp Daycare row's Hrs field is driven automatically by the hours table above
+const daycareRow = svcBody.lastElementChild.previousElementSibling; // Camp Daycare is second-to-last (before the blank row)
+const daycareQtyEl = daycareRow.querySelector('.svc-qty');
+daycareQtyEl.id = 'daycareQty';
+daycareQtyEl.readOnly = true;
+daycareQtyEl.classList.add('fixed');
+daycareQtyEl.value = '0.00';
+
+// now that both tables' functions/elements exist, run the initial calculation
+// (this also populates daycareQty for the first time)
+recalcHours();
+
+// ---- verification checkbox + full-form validation + print ----
 const verifyBlock = document.querySelector('.verify-block');
 const verifyCheckbox = document.getElementById('verifyCheckbox');
+const signatureEl = document.getElementById('signature');
 
 verifyCheckbox.addEventListener('change', () => {
-  if(verifyCheckbox.checked) verifyBlock.classList.remove('unverified');
+  if(verifyCheckbox.checked && signatureEl.value.trim()) verifyBlock.classList.remove('unverified');
+});
+signatureEl.addEventListener('input', () => {
+  signatureEl.classList.remove('invalid');
+  if(verifyCheckbox.checked && signatureEl.value.trim()) verifyBlock.classList.remove('unverified');
 });
 
+// ---- phone auto-formatting: xxx-xxx-xxxx as you type ----
+const phoneEl = document.getElementById('phone');
+phoneEl.addEventListener('input', () => {
+  const digits = phoneEl.value.replace(/\D/g, '').slice(0, 10);
+  let formatted = digits;
+  if(digits.length > 6){
+    formatted = digits.slice(0,3) + '-' + digits.slice(3,6) + '-' + digits.slice(6);
+  } else if(digits.length > 3){
+    formatted = digits.slice(0,3) + '-' + digits.slice(3);
+  }
+  phoneEl.value = formatted;
+  if(phoneEl.value.trim()) phoneEl.classList.remove('invalid');
+});
+
+// ---- zip code: digits only, max 5 ----
+const zipEl = document.getElementById('zip');
+zipEl.addEventListener('input', () => {
+  zipEl.value = zipEl.value.replace(/\D/g, '').slice(0, 5);
+  if(zipEl.value.trim()) zipEl.classList.remove('invalid');
+});
+
+// live-clear for the newly-required fields as the user fills them in
+['staffName','phone','email','acctNum','routingNum','street','city','state'].forEach(id => {
+  const el = document.getElementById(id);
+  el.addEventListener('input', () => { if(el.value.trim()) el.classList.remove('invalid'); });
+});
+[document.getElementById('sessionRow'), document.getElementById('campusRow')].forEach(row => {
+  row.addEventListener('change', () => {
+    if(row.querySelectorAll('input:checked').length > 0) row.classList.remove('invalid');
+  });
+});
+hoursBody.addEventListener('input', () => {
+  hoursBody.querySelectorAll('tr').forEach(tr => {
+    const start = tr.querySelector('.start'), end = tr.querySelector('.end');
+    if(start.value.trim()) start.classList.remove('invalid');
+    if(end.value.trim()) end.classList.remove('invalid');
+  });
+});
+svcBody.addEventListener('input', () => {
+  svcBody.querySelectorAll('tr').forEach(tr => {
+    const desc = tr.querySelector('.svc-desc'), cost = tr.querySelector('.svc-cost'), qty = tr.querySelector('.svc-qty');
+    if(desc.value.trim()) desc.classList.remove('invalid');
+    if(cost.value.trim()) cost.classList.remove('invalid');
+    if(qty.value.trim()) qty.classList.remove('invalid');
+  });
+});
+
+function clearAllWarnings(){
+  document.querySelectorAll('.form-warn.show').forEach(el => el.classList.remove('show'));
+}
+
 document.getElementById('printBtn').addEventListener('click', () => {
-  if(!verifyCheckbox.checked){
+  clearAllWarnings();
+  let allOk = true;
+  let scrollTarget = null;
+  const markFail = (el) => { allOk = false; if(!scrollTarget) scrollTarget = el; };
+
+  // 1. Invoice # & Date
+  let metaOk = true;
+  [invNumEl, invDateEl].forEach(el => {
+    if(!el.value.trim()){ el.classList.add('invalid'); metaOk = false; }
+    else { el.classList.remove('invalid'); }
+  });
+  if(!metaOk){
+    metaWarn.classList.add('show');
+    markFail(invNumEl);
+  } else {
+    metaWarn.classList.remove('show');
+  }
+
+  // 2. Session(s) & Campus - at least one checked in each group
+  const sessionRow = document.getElementById('sessionRow');
+  const campusRow = document.getElementById('campusRow');
+  const sessionChecked = sessionRow.querySelectorAll('input:checked').length > 0;
+  const campusChecked = campusRow.querySelectorAll('input:checked').length > 0;
+  sessionRow.classList.toggle('invalid', !sessionChecked);
+  campusRow.classList.toggle('invalid', !campusChecked);
+  if(!sessionChecked || !campusChecked){
+    document.getElementById('sessionCampusWarn').classList.add('show');
+    markFail(sessionRow);
+  }
+
+  // 3. Staff & Payment Info - all fields required
+  const staffIds = ['staffName','street','city','state','zip','phone','email','acctNum','routingNum'];
+  let staffOk = true;
+  let firstInvalidStaffEl = null;
+  staffIds.forEach(id => {
+    const el = document.getElementById(id);
+    if(!el.value.trim()){
+      el.classList.add('invalid');
+      staffOk = false;
+      if(!firstInvalidStaffEl) firstInvalidStaffEl = el;
+    } else {
+      el.classList.remove('invalid');
+    }
+  });
+  // zip must be exactly 5 digits
+  const zipInput = document.getElementById('zip');
+  if(zipInput.value.trim() && zipInput.value.trim().length !== 5){
+    zipInput.classList.add('invalid');
+    staffOk = false;
+    if(!firstInvalidStaffEl) firstInvalidStaffEl = zipInput;
+  }
+  if(!staffOk){
+    document.getElementById('staffWarn').classList.add('show');
+    markFail(firstInvalidStaffEl);
+  }
+
+  // 4. Hours table - a day is only "in use" if Start or End has been entered; if so, both are required.
+  //    Break can stay blank/0 (no break taken) regardless. Days left entirely blank are simply not worked.
+  let hoursRowsOk = true;
+  let firstInvalidHoursEl = null;
+  hoursBody.querySelectorAll('tr').forEach(tr => {
+    const start = tr.querySelector('.start'), end = tr.querySelector('.end');
+    const inUse = start.value.trim() !== '' || end.value.trim() !== '';
+    if(inUse){
+      if(!start.value.trim()){ start.classList.add('invalid'); hoursRowsOk = false; if(!firstInvalidHoursEl) firstInvalidHoursEl = start; }
+      else { start.classList.remove('invalid'); }
+      if(!end.value.trim()){ end.classList.add('invalid'); hoursRowsOk = false; if(!firstInvalidHoursEl) firstInvalidHoursEl = end; }
+      else { end.classList.remove('invalid'); }
+    } else {
+      start.classList.remove('invalid');
+      end.classList.remove('invalid');
+    }
+  });
+  const totalCombinedVal = parseFloat(document.getElementById('totCombined').textContent) || 0;
+  if(!hoursRowsOk || totalCombinedVal <= 0){
+    document.getElementById('hoursWarn').classList.add('show');
+    markFail(firstInvalidHoursEl || hoursBody);
+  }
+
+  // 5. Services table - a line is only "in use" if Hrs > 0; if so, Cost and Description are required
+  let svcRowsOk = true;
+  let firstInvalidSvcEl = null;
+  svcBody.querySelectorAll('tr').forEach(tr => {
+    const desc = tr.querySelector('.svc-desc'), cost = tr.querySelector('.svc-cost'), qty = tr.querySelector('.svc-qty');
+    const qtyVal = parseFloat(qty.value) || 0;
+    if(qtyVal > 0){
+      if(!desc.value.trim()){ desc.classList.add('invalid'); svcRowsOk = false; if(!firstInvalidSvcEl) firstInvalidSvcEl = desc; }
+      else { desc.classList.remove('invalid'); }
+      if(!(parseFloat(cost.value) > 0)){ cost.classList.add('invalid'); svcRowsOk = false; if(!firstInvalidSvcEl) firstInvalidSvcEl = cost; }
+      else { cost.classList.remove('invalid'); }
+    } else {
+      desc.classList.remove('invalid');
+      cost.classList.remove('invalid');
+    }
+  });
+  const grandTotalVal = parseFloat(document.getElementById('grandTotal').textContent.replace('$','')) || 0;
+  if(!svcRowsOk || grandTotalVal <= 0){
+    document.getElementById('servicesWarn').classList.add('show');
+    markFail(firstInvalidSvcEl || svcBody);
+  }
+
+  // 6. Verification checkbox + signature
+  if(!verifyCheckbox.checked || !signatureEl.value.trim()){
     verifyBlock.classList.add('unverified');
-    verifyBlock.scrollIntoView({behavior:'smooth', block:'center'});
+    if(!signatureEl.value.trim()) signatureEl.classList.add('invalid');
+    markFail(verifyBlock);
   } else {
     verifyBlock.classList.remove('unverified');
+    signatureEl.classList.remove('invalid');
   }
+
+  if(!allOk){
+    scrollTarget.scrollIntoView({behavior:'smooth', block:'center'});
+    return;
+  }
+
+  // ---- build a suggested PDF filename: FirstName_LastName_SessionW#_YYYY-MM-DD ----
+  // Chrome/Edge's "Save as PDF" dialog suggests document.title as the default filename,
+  // so we set it right before printing and restore it afterward.
+  const nameParts = document.getElementById('staffName').value.trim().split(/\s+/);
+  const firstName = nameParts[0] || 'Staff';
+  const lastName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : '';
+  const checkedSession = sessionRow.querySelector('input:checked');
+  const sessionLabel = checkedSession ? checkedSession.value.replace(/\s+/g, '') : 'Session';
+  const today = new Date();
+  const dateStr = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
+  document.title = [firstName, lastName, sessionLabel, dateStr].filter(Boolean).join('_');
+
   window.print();
 });
+
+window.addEventListener('afterprint', () => { document.title = ORIGINAL_TITLE; });
 </script>
 
 </body>
