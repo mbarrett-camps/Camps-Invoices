@@ -513,7 +513,11 @@
     <h2>Staff &amp; Payment Info</h2>
     <div class="grid2">
       <div>
-        <div class="field"><label>Name (Staff Member)<span class="req-mark">*</span></label><input type="text" id="staffName"></div>
+        <div class="field">
+          <label>Name (Staff Member)<span class="req-mark">*</span></label>
+          <input type="text" id="staffName">
+          <p class="note" style="margin:4px 0 0;">Please include both first and last name.</p>
+        </div>
       </div>
       <div>
         <div class="field"><label>Phone<span class="req-mark">*</span></label><input type="text" id="phone" placeholder="xxx-xxx-xxxx"></div>
@@ -532,7 +536,7 @@
       <div class="field"><label>Account #<span class="req-mark">*</span></label><input type="text" id="acctNum"></div>
       <div class="field"><label>Routing #<span class="req-mark">*</span></label><input type="text" id="routingNum"></div>
     </div>
-    <p class="form-warn" id="staffWarn">Please complete all Staff &amp; Payment Info fields (Zip Code must be 5 digits).</p>
+    <p class="form-warn" id="staffWarn">Please complete all Staff &amp; Payment Info fields (Zip Code must be 5 digits, Name must include first and last name).</p>
   </div>
 
   <div class="section">
@@ -599,10 +603,10 @@
         <input type="checkbox" id="verifyCheckbox">
         <span>I verify that the above hours are accurate and true.</span>
       </label>
-      <p class="verify-warn" id="verifyWarn">Please check the box above and sign below to verify your hours before printing.</p>
+      <p class="verify-warn" id="verifyWarn">Please check the box above and sign below with your first and last name to verify your hours before printing.</p>
       <div class="field" style="max-width:320px; margin-top:10px;">
         <label>Signature<span class="req-mark">*</span></label>
-        <input type="text" id="signature" placeholder="Type your full name">
+        <input type="text" id="signature" placeholder="Type your first and last name">
       </div>
     </div>
   </div>
@@ -775,13 +779,16 @@ recalcHours();
 const verifyBlock = document.querySelector('.verify-block');
 const verifyCheckbox = document.getElementById('verifyCheckbox');
 const signatureEl = document.getElementById('signature');
+function hasFirstAndLastName(value){
+  return value.trim().split(/\s+/).filter(Boolean).length >= 2;
+}
 
 verifyCheckbox.addEventListener('change', () => {
-  if(verifyCheckbox.checked && signatureEl.value.trim()) verifyBlock.classList.remove('unverified');
+  if(verifyCheckbox.checked && hasFirstAndLastName(signatureEl.value)) verifyBlock.classList.remove('unverified');
 });
 signatureEl.addEventListener('input', () => {
-  signatureEl.classList.remove('invalid');
-  if(verifyCheckbox.checked && signatureEl.value.trim()) verifyBlock.classList.remove('unverified');
+  if(hasFirstAndLastName(signatureEl.value)) signatureEl.classList.remove('invalid');
+  if(verifyCheckbox.checked && hasFirstAndLastName(signatureEl.value)) verifyBlock.classList.remove('unverified');
 });
 
 // ---- phone auto-formatting: xxx-xxx-xxxx as you type ----
@@ -806,9 +813,12 @@ zipEl.addEventListener('input', () => {
 });
 
 // live-clear for the newly-required fields as the user fills them in
-['staffName','phone','email','acctNum','routingNum','street','city','state'].forEach(id => {
+['phone','email','acctNum','routingNum','street','city','state'].forEach(id => {
   const el = document.getElementById(id);
   el.addEventListener('input', () => { if(el.value.trim()) el.classList.remove('invalid'); });
+});
+document.getElementById('staffName').addEventListener('input', function(){
+  if(hasFirstAndLastName(this.value)) this.classList.remove('invalid');
 });
 [document.getElementById('sessionRow'), document.getElementById('campusRow')].forEach(row => {
   row.addEventListener('change', () => {
@@ -887,6 +897,13 @@ document.getElementById('printBtn').addEventListener('click', () => {
     staffOk = false;
     if(!firstInvalidStaffEl) firstInvalidStaffEl = zipInput;
   }
+  // staff name must include both a first and last name
+  const staffNameInput = document.getElementById('staffName');
+  if(!hasFirstAndLastName(staffNameInput.value)){
+    staffNameInput.classList.add('invalid');
+    staffOk = false;
+    if(!firstInvalidStaffEl) firstInvalidStaffEl = staffNameInput;
+  }
   if(!staffOk){
     document.getElementById('staffWarn').classList.add('show');
     markFail(firstInvalidStaffEl);
@@ -938,9 +955,9 @@ document.getElementById('printBtn').addEventListener('click', () => {
   }
 
   // 6. Verification checkbox + signature
-  if(!verifyCheckbox.checked || !signatureEl.value.trim()){
+  if(!verifyCheckbox.checked || !hasFirstAndLastName(signatureEl.value)){
     verifyBlock.classList.add('unverified');
-    if(!signatureEl.value.trim()) signatureEl.classList.add('invalid');
+    if(!hasFirstAndLastName(signatureEl.value)) signatureEl.classList.add('invalid');
     markFail(verifyBlock);
   } else {
     verifyBlock.classList.remove('unverified');
@@ -952,17 +969,19 @@ document.getElementById('printBtn').addEventListener('click', () => {
     return;
   }
 
-  // ---- build a suggested PDF filename: FirstName_LastName_SessionW#_YYYY-MM-DD ----
+  // ---- build a suggested PDF filename: FirstName_LastName_Campus_SessionW#_YYYY-MM-DD ----
   // Chrome/Edge's "Save as PDF" dialog suggests document.title as the default filename,
   // so we set it right before printing and restore it afterward.
   const nameParts = document.getElementById('staffName').value.trim().split(/\s+/);
   const firstName = nameParts[0] || 'Staff';
   const lastName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : '';
+  const checkedCampuses = [...campusRow.querySelectorAll('input:checked')].map(el => el.value);
+  const campusLabel = checkedCampuses.length ? checkedCampuses.join('-') : 'Campus';
   const checkedSession = sessionRow.querySelector('input:checked');
   const sessionLabel = checkedSession ? checkedSession.value.replace(/\s+/g, '') : 'Session';
   const today = new Date();
   const dateStr = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
-  document.title = [firstName, lastName, sessionLabel, dateStr].filter(Boolean).join('_');
+  document.title = [firstName, lastName, campusLabel, sessionLabel, dateStr].filter(Boolean).join('_');
 
   window.print();
 });
